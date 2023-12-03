@@ -6,7 +6,7 @@
   "main": "./dist/background.js",
   "engines": {
     "node": ">=18.13.0 <19",
-    "npm": ">=8.19.3 <9"
+    "npm": ">=8.19.3 <10"
   },
   "volta": {
     "node": "18.13.0",
@@ -59,7 +59,7 @@
     "systeminformation": "5.21.15",
     "tree-kill": "1.2.2",
     "uuid": "9.0.0",
-    "vue": "3.2.45",
+    "vue": "3.3.7",
     "vue-router": "4.0.8",
     "vuedraggable": "4.1.0",
     "vuex": "4.0.2",
