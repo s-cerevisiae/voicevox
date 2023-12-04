@@ -1,4 +1,6 @@
 {
+  description = "無料で使える中品質なテキスト読み上げソフトウェア。エディターのみ。";
+
   inputs.nixpkgs.url = "github:NixOS/nixpkgs";
 
   outputs = { self, nixpkgs, ... }:
@@ -22,6 +24,7 @@
           node
           pkgs.jq
           pkgs.makeWrapper
+          pkgs.copyDesktopItems
         ];
 
         buildInputs = [ _7z ];
@@ -86,8 +89,22 @@
             --set-default ELECTRON_IS_DEV 0 \
             --inherit-argv0
 
+          icondir=$out/share/icons/hicolor/256x256/apps
+          mkdir -p $icondir
+          cp dist/icon.png $icondir/voicevox.png
+
           runHook postInstall
         '';
+
+        desktopItems = [
+          (pkgs.makeDesktopItem {
+            name = "voicevox";
+            exec = "voicevox %U";
+            icon = "voicevox";
+            desktopName = "VOICEVOX";
+            categories = [ "AudioVideo" ];
+          })
+        ];
       };
     };
 }
