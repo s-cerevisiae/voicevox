@@ -8,7 +8,11 @@
         node = pkgs.nodejs_18;
         electron = pkgs.electron_27;
         _7z = pkgs._7zz;
-    in {
+    in rec {
+      devShells.${system}.default = pkgs.mkShell {
+        packages = [ node.pkgs.typescript-language-server ];
+        inputsFrom = [ packages.${system}.default ];
+      };
       packages.${system}.default = pkgs.buildNpmPackage {
         pname = "voicevox";
         version = "999.999.999";
@@ -36,8 +40,6 @@
                   "host": "http://127.0.0.1:50021"
               }
           ]'';
-
-          VITE_7Z_BIN_NAME = "${_7z}/bin/7zz";
         };
 
         npmDepsHash = "sha256-AWVqm8Z56f2eJe/4nR/HcV/PXcpTX/uR+N9igLJjZCI=";
@@ -56,7 +58,12 @@
         buildPhase = ''
           runHook preBuild
 
-          npx cross-env VITE_TARGET=electron vite build
+          export VITE_TARGET=electron
+          export VITE_APP_BASE=$out/opt/voicevox
+
+          npx vite build
+
+          ln -s ${_7z}/bin/7zz build/vendored/7z/7zzs
 
           npx electron-builder --dir \
             --config electron-builder.config.js \
@@ -71,7 +78,7 @@
 
           pushd dist_electron/linux-unpacked
           mkdir -p $out/opt/voicevox
-          cp -r locales resources{,.pak} $out/opt/voicevox
+          cp -r locales resources{,.pak} 7zzs $out/opt/voicevox
           popd
 
           makeWrapper '${electron}/bin/electron' "$out/bin/voicevox" \
