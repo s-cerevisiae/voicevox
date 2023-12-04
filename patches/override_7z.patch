@@ -1,0 +1,77 @@
+diff --git a/electron-builder.config.js b/electron-builder.config.js
+index 5a35d05..af39f01 100644
+--- a/electron-builder.config.js
++++ b/electron-builder.config.js
+@@ -35,19 +35,6 @@ const isMac = process.platform === "darwin";
+ // cf: https://k-hyoda.hatenablog.com/entry/2021/10/23/000349#%E8%BF%BD%E5%8A%A0%E5%B1%95%E9%96%8B%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E5%85%88%E3%81%AE%E8%A8%AD%E5%AE%9A
+ const extraFilePrefix = isMac ? "MacOS/" : "";
+ 
+-const sevenZipFile = fs
+-  .readdirSync(path.resolve(__dirname, "build", "vendored", "7z"))
+-  .find(
+-    // Windows: 7za.exe, Linux: 7zzs, macOS: 7zz
+-    (fileName) => ["7za.exe", "7zzs", "7zz"].includes(fileName)
+-  );
+-
+-if (!sevenZipFile) {
+-  throw new Error(
+-    "7z binary file not found. Run `node ./build/download7z.js` first."
+-  );
+-}
+-
+ /** @type {import("electron-builder").Configuration} */
+ const builderOptions = {
+   beforeBuild: async () => {
+@@ -92,10 +79,6 @@ const builderOptions = {
+       from: VOICEVOX_ENGINE_DIR,
+       to: path.join(extraFilePrefix, "vv-engine"),
+     },
+-    {
+-      from: path.resolve(__dirname, "build", "vendored", "7z", sevenZipFile),
+-      to: extraFilePrefix + sevenZipFile,
+-    },
+   ],
+   // electron-builder installer
+   productName: "VOICEVOX",
+diff --git a/src/background/vvppManager.ts b/src/background/vvppManager.ts
+index abd2e3b..849119c 100644
+--- a/src/background/vvppManager.ts
++++ b/src/background/vvppManager.ts
+@@ -196,16 +196,10 @@ export class VvppManager {
+ 
+         const args = ["x", "-o" + outputDir, archiveFile, "-t" + format];
+ 
+-        let sevenZipPath = import.meta.env.VITE_7Z_BIN_NAME;
++        const sevenZipPath = import.meta.env.VITE_7Z_BIN_NAME;
+         if (!sevenZipPath) {
+           throw new Error("7z path is not defined");
+         }
+-        if (import.meta.env.PROD) {
+-          sevenZipPath = path.join(
+-            path.dirname(app.getPath("exe")),
+-            sevenZipPath
+-          );
+-        }
+         log.log(
+           "Spawning 7z:",
+           sevenZipPath,
+diff --git a/vite.config.ts b/vite.config.ts
+index a7d3835..81ec613 100644
+--- a/vite.config.ts
++++ b/vite.config.ts
+@@ -25,15 +25,6 @@ export default defineConfig((options) => {
+     );
+   }
+   const shouldEmitSourcemap = ["development", "test"].includes(options.mode);
+-  process.env.VITE_7Z_BIN_NAME =
+-    (options.mode === "development"
+-      ? path.join(__dirname, "build", "vendored", "7z") + path.sep
+-      : "") +
+-    {
+-      win32: "7za.exe",
+-      linux: "7zzs",
+-      darwin: "7zz",
+-    }[process.platform];
+   process.env.VITE_APP_VERSION = process.env.npm_package_version;
+   const sourcemap: BuildOptions["sourcemap"] = shouldEmitSourcemap
+     ? "inline"

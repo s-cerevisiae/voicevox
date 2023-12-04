@@ -7,6 +7,7 @@
         lib = pkgs.lib;
         node = pkgs.nodejs_18;
         electron = pkgs.electron_27;
+        _7z = pkgs._7zz;
     in {
       packages.${system}.default = pkgs.buildNpmPackage {
         pname = "voicevox";
@@ -19,11 +20,13 @@
           pkgs.makeWrapper
         ];
 
+        buildInputs = [ _7z ];
+
         env = {
           ELECTRON_OVERRIDE_DIST_PATH = "${electron}/libexec/electron";
           ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
 
-          VITE_DEFAULT_ENGINE_INFOS= ''[
+          VITE_DEFAULT_ENGINE_INFOS = ''[
               {
                   "uuid": "074fc39e-678b-4c13-8916-ffca8d505d1d",
                   "name": "VOICEVOX Engine",
@@ -33,11 +36,15 @@
                   "host": "http://127.0.0.1:50021"
               }
           ]'';
+
+          VITE_7Z_BIN_NAME = "${_7z}/bin/7zz";
         };
 
         npmDepsHash = "sha256-AWVqm8Z56f2eJe/4nR/HcV/PXcpTX/uR+N9igLJjZCI=";
 
         npmFlags = [ "--ignore-scripts" ];
+
+        patches = [ ./patches/override_7z.patch ];
 
         preBuild = ''
           if [[ $(jq --raw-output '.devDependencies.electron' < package.json | grep -E --only-matching '^[0-9]+') != ${lib.escapeShellArg (lib.versions.major electron.version)} ]]; then
@@ -51,8 +58,6 @@
 
           npx cross-env VITE_TARGET=electron vite build
 
-          ln -s ${pkgs._7zz}/bin/7zz build/vendored/7z/7zzs
-
           npx electron-builder --dir \
             --config electron-builder.config.js \
             -c.electronDist=${electron}/libexec/electron \
@@ -63,8 +68,6 @@
 
         installPhase = ''
           runHook preInstall
-
-          mkdir $out
 
           pushd dist_electron/linux-unpacked
           mkdir -p $out/opt/voicevox
