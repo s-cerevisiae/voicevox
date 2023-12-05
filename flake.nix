@@ -1,4 +1,4 @@
-{
+rec {
   description = "無料で使える中品質なテキスト読み上げソフトウェア。エディターのみ。";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs";
@@ -101,6 +101,7 @@
           name = "voicevox";
           exec = "voicevox %U";
           icon = "voicevox";
+          comment = description;
           desktopName = "VOICEVOX";
           categories = [ "AudioVideo" ];
         })
