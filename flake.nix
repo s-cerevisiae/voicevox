@@ -61,11 +61,11 @@ rec {
         runHook preBuild
 
         export VITE_TARGET=electron
-        export VITE_APP_BASE=$out/opt/voicevox
+        export VITE_APP_BASE=$out/share/lib/voicevox
 
         npx vite build
 
-        ln -s ${_7z}/bin/7zz build/vendored/7z/7zzs
+        touch build/vendored/7z/7zzs
 
         npx electron-builder --dir \
           --config electron-builder.config.js \
@@ -79,12 +79,14 @@ rec {
         runHook preInstall
 
         pushd dist_electron/linux-unpacked
-        mkdir -p $out/opt/voicevox
-        cp -r locales resources{,.pak} 7zzs $out/opt/voicevox
+        mkdir -p $out/share/lib/voicevox
+        cp -r locales resources{,.pak} $out/share/lib/voicevox
         popd
 
+        ln -s ${_7z}/bin/7zz $out/share/lib/voicevox/7zzs
+
         makeWrapper '${electron}/bin/electron' "$out/bin/voicevox" \
-          --add-flags $out/opt/voicevox/resources/app.asar \
+          --add-flags $out/share/lib/voicevox/resources/app.asar \
           --set-default ELECTRON_IS_DEV 0 \
           --inherit-argv0
 
