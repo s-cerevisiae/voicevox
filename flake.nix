@@ -30,7 +30,6 @@ rec {
       buildInputs = [ _7z ];
 
       env = {
-        ELECTRON_OVERRIDE_DIST_PATH = "${electron}/libexec/electron";
         ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
 
         VITE_DEFAULT_ENGINE_INFOS = ''[
